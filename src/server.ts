@@ -1,10 +1,15 @@
 import { UserRouter } from '@/api/user/router';
 
-import express, { Express } from 'express';
+import express, { Express, Request, Response } from 'express';
 const app: Express = express();
 
-app.use(express.json())
+app.use(express.json());
 
 app.use('/users', UserRouter);
+
+app.get('/', (_req: Request, res: Response) => {
+	res.set('Content-Type', 'text/html');
+	res.status(200).send('<h1>Hello World</h1>')
+});
 
 export { app };

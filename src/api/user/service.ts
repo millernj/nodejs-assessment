@@ -6,7 +6,7 @@ import { UserRepository } from "./repository";
 export const UserService = {
   // getters
   getAll: async (): Promise<User[]> => UserRepository.getAll(),
-  findById: async (id: number): Promise<User | undefined> => UserRepository.findById(id),
+  findById: async (id: number): Promise<User | null> => UserRepository.findById(id),
 
   // setters
   create: async (newUser: UserPayload): Promise<DataOpResponse> => {

@@ -17,7 +17,7 @@ const loadFromFile = (): User[] => {
   return [];
 }
 
-let users: User[] = loadFromFile();
+const users: User[] = loadFromFile();
 
 const saveToFile = () => writeFileSync(dbPath, JSON.stringify(users, null, 2));
 
@@ -29,8 +29,8 @@ export const UserRepository = {
     const index = users.findIndex(({ id: _id }) => _id === userId);
     return Promise.resolve(index)
   },
-  findById: async (userId: number): Promise<User | undefined> => {
-    const user = users.find(({ id: _id }) => _id === userId);
+  findById: async (userId: number): Promise<User | null> => {
+    const user = users.find(({ id: _id }) => _id === userId) || null;
     return Promise.resolve(user)
   },
 
