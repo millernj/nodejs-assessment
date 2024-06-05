@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const usersFilePath = path.join(__dirname, '../data/users.json');
+const usersFilePath = path.join(__dirname, '../data/users.json'); // not the right path for the json file
 
 const getUsers = () => JSON.parse(fs.readFileSync(usersFilePath, 'utf8'));
 const saveUsers = (users) => fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));

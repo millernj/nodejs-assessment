@@ -25,7 +25,7 @@ export const UserService = {
       if (!user)
           return new ServiceResponse(ResponseStatus.Failure, StatusCodes.NOT_FOUND, 'User not found');
 
-      return new ServiceResponse<User>(ResponseStatus.Success, StatusCodes.OK, `User found`, user);
+      return new ServiceResponse<User>(ResponseStatus.Success, StatusCodes.OK, `User (id: ${id}) found`, user);
     } catch (error) {
       const message = `Error finding user (id: ${id}): ${(error as Error).message}`
 
@@ -38,7 +38,7 @@ export const UserService = {
     try {
       const user = await UserRepository.create(userPayload);
       
-      return new ServiceResponse<User>(ResponseStatus.Success, StatusCodes.OK, `User Created`, user);
+      return new ServiceResponse<User>(ResponseStatus.Success, StatusCodes.OK, `User (id: ${user.id}) created`, user);
     } catch (error) {
       const message = `Error creating user: ${(error as Error).message}`;
 
@@ -51,7 +51,7 @@ export const UserService = {
       if (!updatedUser)
         return new ServiceResponse(ResponseStatus.Failure, StatusCodes.NOT_FOUND, 'User not found');
 
-      return new ServiceResponse<User>(ResponseStatus.Success, StatusCodes.OK, `User Updated`, updatedUser);
+      return new ServiceResponse<User>(ResponseStatus.Success, StatusCodes.OK, `User (id: ${id}) updated`, updatedUser);
     } catch (error) {
       const message = `Error updating user (id: ${id}): ${(error as Error).message}`;
 

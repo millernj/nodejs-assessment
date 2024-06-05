@@ -1,4 +1,4 @@
-global.PORT = 3000;
+global.PORT = 3000; // using globals is not ideal, use process.env.PORT instead
 
 const express = require('express');
 const app = express();
@@ -11,6 +11,8 @@ app.get('/users/:id', userController.getUserById);
 app.put('/users/:id', userController.updateUser);
 app.delete('/users/:id', userController.deleteUser);
 
+// adding this middleware here is too late for the post and put requests to parse req.body
+// needs to move up before all the endpoints are defined
 app.use(express.json())
 
 app.get('/', (req,res) => {
