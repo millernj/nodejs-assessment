@@ -61,6 +61,8 @@ export const UserService = {
   delete: async (id: number): Promise<ServiceResponse<number>> => {
     try {
       const userId = await UserRepository.delete(id);
+      if (userId === -1)
+        return new ServiceResponse(ResponseStatus.Failure, StatusCodes.NOT_FOUND, 'User not found');
 
       return new ServiceResponse<number>(ResponseStatus.Success, StatusCodes.OK, `User (id: ${id}) deleted`, userId);
     } catch (error) {

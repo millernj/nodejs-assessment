@@ -11,15 +11,15 @@ describe('UserService', () => {
   });
 
   const fakeUser: User = {
-    id: 1, 
-    name: 'John Doe', 
+    id: 1,
+    name: 'John Doe',
     email: 'john@example.com',
     address: {
       street: "123 Main St",
       city: "Anytown",
       state: "CA",
-      zipCode: "12345"
-    }
+      zipCode: "12345",
+    },
   };
 
   describe('getAll', () => {
@@ -173,6 +173,17 @@ describe('UserService', () => {
       expect(result.statusCode).toBe(StatusCodes.OK);
       expect(result.message).toBeTruthy();
       expect(result.responseObject).toEqual(fakeUser.id);
+    });
+
+    it('should return user not found if the user does not exist', async () => {
+      (UserRepository.delete as jest.Mock).mockResolvedValue(-1);
+
+      const result = await UserService.delete(fakeUser.id);
+
+      expect(result.success).toBe(false);
+      expect(result.statusCode).toBe(StatusCodes.NOT_FOUND);
+      expect(result.message).toBeTruthy()
+      expect(result.responseObject).toBeUndefined();
     });
 
     it('should return an error if the repository throws an error', async () => {
