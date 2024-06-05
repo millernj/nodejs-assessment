@@ -1,12 +1,23 @@
 import dotenv from 'dotenv';
 
+enum Environments {
+  Dev = 'dev',
+  Test = 'test',
+  Acceptance = 'acceptance',
+  Staging = 'staging',
+  Production = 'production',
+}
+
+// load env from a .env file if there is one
 dotenv.config()
 
-const devDefaults = {
-  NODE_ENV: 'test',
-  HOST: 'localhost',
-  PORT: 3000,
+const devOverrides = {
+  NODE_ENV:    Environments.Dev,
+  HOST:        'localhost',
+  PORT:         3000,
   CORS_ORIGIN: 'http://localhost:3000'
 };
 
-export const env = ['acceptance', 'staging', 'production'].includes(process.env.NODE_ENV as string) ? process.env : { ...process.env, ...devDefaults };
+const useDevOverrides = !process.env.NODE_ENV || Environments.Dev === process.env.NODE_ENV as Environments;
+
+export const env = useDevOverrides ? { ...process.env, ...devOverrides } : process.env;

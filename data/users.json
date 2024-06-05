@@ -53,16 +53,5 @@
       "state": "IL",
       "zipCode": "45678"
     }
-  },
-  {
-    "id": 6,
-    "name": "Bob Hope",
-    "email": "bob.hope@gmail.com",
-    "address": {
-      "street": "999 Heaven St.",
-      "city": "Villaville",
-      "state": "CA",
-      "zipCode": "90035"
-    }
   }
 ]

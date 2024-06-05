@@ -1,22 +1,3 @@
-/* 
-One big smell is that this file is responsible for everything user related from talking to the db to serving json responses.
-
-As other more complicated models start getting added to the codebase beyond users, this approach could lead to some pretty 
-bloated controllers at best, and it would be difficult to expand any model functionality beyond CRUD.
-
-In src, I break things up to be more granualar to open the door to easier testing and more complex features.
-
-For example, let's say another model was created called "messages" and the feature requirements were such that every time
-a message was created, it would update a new field in the User model called "history" that stores the 10 most recent 
-messages. If we apply this pattern to that use case, you'd need a separate controller for messages that would also read and 
-make updates to the user db as part of the createMessage endpoint logic. This adds a lot of unrelated responsibility and
-knowledge of the User Model to the message controller, which makes maintanence and further feature development more complex.
-
-With my approach, you'd be able to import the user service into a newly created Message Service to make the appropriate 
-update to the User that posted the message. The Messages service would know how to use the User service to make updates, 
-but it wouldn't need to know how to read/write to the User file as that would firmly be the User Repository's responsibility.
-*/
-
 const fs = require('fs');
 const path = require('path');
 
@@ -84,6 +65,7 @@ const updateUser = (req, res) => {
 		user.email = email;
 		user.address = address;
 
+		// writing to a file without locking it first could step on other writes from other requests, corrupting data
 		saveUsers(users);
 		res.json(user);
 	} else {
@@ -107,6 +89,7 @@ const deleteUser = (req, res) => {
 	
 	if (user) {
 		const updatedUsers = users.filter((u) => u.id !== userId);
+		// writing to a file without locking it first could step on other writes from other requests, corrupting data
 		saveUsers(updatedUsers);
 		res.json({message: 'User deleted successfully'});
 	} else {

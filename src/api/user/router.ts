@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction, Router } from 'express';
+
+import { handleServiceResponse, validateBody, validateParams } from '@/common/utils/httpHandlers';
 import { UserService } from './service';
-import { UserPayload } from './model';
+import { CreateUserPayload, UserParamSchema, CreateUserSchema, UpdateUserSchema } from './model';
 
 
 export const UserRouter: Router = (() => {
@@ -11,63 +13,42 @@ export const UserRouter: Router = (() => {
     res.json(users);
   });
 
-  router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  router.get('/:id', validateParams(UserParamSchema), async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = parseInt(req.params.id as string);
-      const user = await UserService.findById(id);
-      if (!user) {
-        res.status(404);
-        throw new Error(`User with Id ${id} not found`)
-      }
-      res.json(user);
+      const serviceResponse = await UserService.findById(id);
+      handleServiceResponse(serviceResponse, res);
     } catch (error) {
       next(error);
     }
   });
 
-  router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+  router.post('/', validateBody(CreateUserSchema), async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const newUser = req.body as UserPayload;
-      if (!newUser) {
-        res.status(400);
-        throw new Error('Bad Payload');
-      }
-      const response = await UserService.create(newUser);
-      res.json(response);
+      const newUser = req.body as CreateUserPayload;
+      const serviceResponse = await UserService.create(newUser);
+      handleServiceResponse(serviceResponse, res);
     } catch (error) {
       next(error);
     }
   });
 
-  router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  router.put('/:id', validateParams(UserParamSchema), validateBody(UpdateUserSchema), async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = parseInt(req.params.id as string);
-      if (!id) { 
-        res.status(400);
-        throw new Error('Missing User Id');
-      }
-      const userUpdate = req.body as Partial<UserPayload>;
-      if (!userUpdate) {
-        res.status(400);
-        throw new Error('Bad payload');
-      }
-
-      const response = await UserService.update(id, userUpdate);
-      res.json(response);
+      const userUpdate = req.body as Partial<CreateUserPayload>;
+      const serviceResponse = await UserService.update(id, userUpdate);
+      handleServiceResponse(serviceResponse, res);
     } catch (error) {
       next(error);
     }
   });
 
-  router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  router.delete('/:id', validateParams(UserParamSchema), async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = parseInt(req.params.id as string);
-      if (!id) {
-        res.status(400);
-        throw new Error('Missing User Id');
-      }
-      const response = await UserService.delete(id);
-      res.json(response);
+      const serviceResponse = await UserService.delete(id);
+      handleServiceResponse(serviceResponse, res);
     } catch (error) {
       next(error);
     }

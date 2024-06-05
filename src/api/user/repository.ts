@@ -1,9 +1,11 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { DataOpResponse } from '@/common/models/dataOpResponse';
-import { User, UserPayload } from '@/api/user/model';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync } from 'fs';
+import { lockSync, unlockSync } from 'lockfile';
+import { User, CreateUserPayload, UpdateUserPayload } from '@/api/user/model';
+import { Id } from '@/common/models/id';
 
 const dbDir = `data`;
-const dbPath = `data/users.json`;
+const dbPath = `${dbDir}/users.json`;
+const dbLockPath = `${dbPath}.lock`
 
 const loadFromFile = (): User[] => {
   // Read file if it exists
@@ -17,48 +19,62 @@ const loadFromFile = (): User[] => {
   return [];
 }
 
+// only load from file on init
 const users: User[] = loadFromFile();
 
-const saveToFile = () => writeFileSync(dbPath, JSON.stringify(users, null, 2));
+const saveToFile = () => {
+  // lock file to ensure only one write action can be completed at any one time
+  // prevents race conditions
+  lockSync(dbLockPath)
+  try {
+    const tempPath = `${dbPath}.tmp`;
+    writeFileSync(tempPath, JSON.stringify(users, null, 2) + '\n');
+    renameSync(tempPath, dbPath);
+  } finally {
+    unlockSync(dbLockPath)
+  }
+}
 
 export const UserRepository = {
   // getters
   getCount: (): number => users.length,
-  getAll: async (): Promise<User[]> => Promise.resolve(users),
-  findIndexById: async (userId: number): Promise<number> => {
+  getAll: async (): Promise<User[]> => users,
+  findIndexById: async (userId: Id): Promise<number> => {
     const index = users.findIndex(({ id: _id }) => _id === userId);
-    return Promise.resolve(index)
+    return index;
   },
-  findById: async (userId: number): Promise<User | null> => {
+  findById: async (userId: Id): Promise<User | null> => {
     const user = users.find(({ id: _id }) => _id === userId) || null;
-    return Promise.resolve(user)
+    return user;
   },
 
   // setters
-  create: async (newUser: User): Promise<DataOpResponse> => {
-    users.push(newUser);
+  create: async (newUser: CreateUserPayload): Promise<User> => {
+    const id: Id = UserRepository.getCount() + 1;
+    const user: User = { id, ...newUser };
+
+    users.push(user);
     saveToFile();
-    return Promise.resolve({ success: true, message: `1 user added: ${JSON.stringify(newUser)}`})
+    return user;
   },
 
-  update: async (id: number, update: Partial<UserPayload>): Promise<DataOpResponse> => {
+  update: async (id: number, update: UpdateUserPayload): Promise<User | null> => {
     const index = await UserRepository.findIndexById(id);
     if (index === -1)
-      return Promise.resolve({ success: false, message: `User with id ${id} not found` })
-
+      return null;
     const updatedUser = { ...users[index], ...update };
     users[index] = updatedUser;
     saveToFile();
-    return Promise.resolve({ success: true, message: `User ${id} updated : ${JSON.stringify(updatedUser)}`})
+    return updatedUser;
   },
 
-  delete: async (id: number): Promise<DataOpResponse> => {
+  delete: async (id: number): Promise<number> => {
     const index = await UserRepository.findIndexById(id);
     if (index === -1)
-      return Promise.resolve({ success: false, message: `User with id ${id} not found` })
+      return -1;
 
     users.splice(index, 1);
     saveToFile();
-    return Promise.resolve({ success: true, message: `User ${id} deleted`})
+    return id;
   },
 }

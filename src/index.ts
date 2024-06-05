@@ -9,7 +9,7 @@ const server = app.listen(env.PORT, () => {
 });
 
 const onCloseSignal = () => {
-  console.info('sigint received, shutting down');
+  console.info('\nsigint received, shutting down');
   server.close(() => {
     console.info('server closed');
     process.exit();
